@@ -26,6 +26,9 @@ L148 = Component    ("Link",    0.148,          0.670,    4.0,       0,         
 I116 = Component    ("Link",    0.116,          0.600,    3.0,       0,                 0)
 Payload = Component ("Payload", 0,              0,        11.5,      0,                 0)
 
+
+
+
 ### Static Loads ---------------------------------------------------------------------------------------------
 
 ## Individual Static Torque Loads
@@ -43,6 +46,9 @@ static_torque_D148 = (static_torque_load_L148 +
                       static_torque_load_Payload)
 
 print(f"Static Torque Load on D148: {static_torque_D148:.2f} Nm")
+
+
+
 
 ### Dynamic Loads ---------------------------------------------------------------------------------------------
 
@@ -74,22 +80,62 @@ dynamic_torque_D148 = (dynamic_torque_load_L148 +
 
 print(f"Dynamic Torque Load on D148: {dynamic_torque_D148:.2f} Nm")
 
+
+
+
 ### Total Loads ---------------------------------------------------------------------------------------------
 total_torque_D148 = static_torque_D148 + dynamic_torque_D148
 print(f"Total Torque Load on D148: {total_torque_D148:.2f} Nm")
 print(f"D148 Max Torque: {D148.max_torque} Nm")
 
-### Analysis  -----------------------------------------------------------------------------------------------
-## Payload Contribution to total torque
-payload_subtotal_torque_D148 = static_torque_load_Payload + dynamic_torque_load_Payload
-print(f"Payload Contribution to Total Torque on D148: {payload_subtotal_torque_D148:.2f} Nm")
-payload_contribution = payload_subtotal_torque_D148 / total_torque_D148 * 100
-print(f"Payload Contribution Percentage to Total Torque on D148: {payload_contribution:.2f} %")
 
-## D86 Contribution to total torque
-d86_subtotal_torque_D148 = 2 * (static_torque_load_D86 + dynamic_torque_load_D86)
-print(f"D86 Contribution to Total Torque on D148: {d86_subtotal_torque_D148:.2f} Nm")
-d86_contribution = d86_subtotal_torque_D148 / total_torque_D148 * 100
-print(f"D86 Contribution Percentage to Total Torque on D148: {d86_contribution:.2f} %")
+
+
+### Analysis  -----------------------------------------------------------------------------------------------
+
+## Contribution of each component to total torque on D148 as a dictionary
+contribution = {
+    "L148":     (static_torque_load_L148 + dynamic_torque_load_L148),
+    "D116 x2":  2 * (static_torque_load_D116 + dynamic_torque_load_D116),
+    "I116":     (static_torque_load_I116 + dynamic_torque_load_I116),
+    "D86 x2" :  2 * (static_torque_load_D86 + dynamic_torque_load_D86),
+    "Payload":  (static_torque_load_Payload + dynamic_torque_load_Payload)
+}
+# Print Contribution (in Nm & percentage) to total torque using contribution and contribution_percentage dictionary
+for component, torque_contribution in contribution.items():
+    percentage = torque_contribution / total_torque_D148 * 100
+    print(f"{component} Contribution to Total Torque on D148: {torque_contribution:.2f} Nm ({percentage:.2f} %)")
+
+
+
+
+
+### Visualization  -----------------------------------------------------------------------------------------------
+
+# Import visualization library (matplotlib)
+import matplotlib.pyplot as plt
+
+# Prepare data to plot
+components_plot = list(contribution.keys())
+torques_plot = list(contribution.values())
+percentages = [f"{v/total_torque_D148*100:.1f}%" for v in torques_plot]
+
+# Plot data
+fig, ax = plt.subplots()
+bars = ax.barh(components_plot, torques_plot, color='skyblue')
+ax.bar_label(bars, labels=[f'{t:.0f} Nm\n({p})' for t,p in zip(torques_plot, percentages)], 
+             padding=8, fontsize=11, fontweight='light')
+# Format plot
+ax.set_xlabel('Torque Contribution (Nm)')
+ax.set_title('Torque Contribution of Each Component to D148')
+ax.set_xlim(0, max(torques_plot)*1.2)
+#ax.set_yticklabels(components_plot, fontweight='bold', fontsize=12)
+
+# Show plot
+plt.tight_layout
+plt.show()
+
+
+
 
 print(f"End Code")
